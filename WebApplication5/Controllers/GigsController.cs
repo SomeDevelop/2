@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using Microsoft.AspNet.Identity;
+using System;
+using System.Linq;
 using System.Web.Mvc;
 using WebApplication5.Models;
 using WebApplication5.ViewModels;
@@ -13,6 +15,7 @@ namespace WebApplication5.Controllers
             _context = new ApplicationDbContext();
         }
 
+        [Authorize]
         public ActionResult Create()
         {
             var viewModel = new GigFormViewModel
@@ -20,6 +23,24 @@ namespace WebApplication5.Controllers
                 Genres = _context.Genres.ToList()
             };
             return View(viewModel);
+        }
+        [Authorize]
+        [HttpPost]
+        public ActionResult Create(GigFormViewModel viewModel)
+        {
+                      
+            var gig = new Gig
+            {
+                ArtistId = User.Identity.GetUserId(),
+                DateTime = DateTime.Parse(string.Format("{0} {1}", viewModel.Date, viewModel.Time)),
+                GenreId = viewModel.Genre,
+                Venue = viewModel.Venue
+            };
+
+            _context.Gigs.Add(gig);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }
